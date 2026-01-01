@@ -1,0 +1,15 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.webgl {
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none; /* Removes the blue outline when clicked in some browsers */
+}
+
+body {
+    overflow: hidden; /* Prevents scrolling */
+}
