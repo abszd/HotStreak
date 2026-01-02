@@ -5,6 +5,7 @@ class Player {
         this.camera = camera;
         this.scene = scene;
         this.height = 2;
+        this.camera.position.y = 2;
         this.keys = {
             X: 0,
             Z: 0,
@@ -35,7 +36,7 @@ class Player {
 
         this.gun = new Gun(scene);
         this.gun.create();
-        this.gun.equip(this.camera);
+        this.gun.equip(this);
         this.gunOffset = new THREE.Vector3(1, -0.5, -1);
         this.addEventListeners();
     }
@@ -169,6 +170,7 @@ class Player {
             this.velocity.y = 2 - this.camera.position.y;
         }
     }
+
     update(delta) {
         let move = delta * this.speed;
         if (this.keys.sprint) {
@@ -198,11 +200,7 @@ class Player {
         this.velocity.sub(new THREE.Vector3(this.velocity.x, 0, this.velocity.z).multiplyScalar(1 - this.momentumLoss));
         this.velocity.add(this.moveVector);
         this.camera.position.add(this.velocity);
-
-        const gunPos = this.camera.position.clone().add(this.gunOffset);
-        this.gun.setPosition(gunPos.x, gunPos.y, gunPos.z);
-        // const euler = new THREE.Euler().setFromVector3(cameraDir, "YXZ");
-        // this.gun.setRotation(euler, euler.y, euler.z);
+        this.gun.update(delta);
     }
 }
 

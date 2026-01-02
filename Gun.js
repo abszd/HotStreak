@@ -1,9 +1,14 @@
 import * as THREE from "three";
+import Player from "./Player";
 
 class Gun {
     constructor(scene) {
         this.scene = scene;
         this.model = new THREE.Group();
+        this.player = null;
+        this.offpos = new THREE.Vector3(0.4, -0.25, -0.4);
+        this.offrot = new THREE.Vector3(0.1, -0.1, 0);
+        this.swaypos = new THREE.Vector3(0, 0, 0);
     }
 
     create() {
@@ -136,24 +141,54 @@ class Gun {
             }
         });
 
-        this.model;
         return this.model;
     }
 
+    sway(delta) {
+        let target;
+        if (this.player.velocity.length() >= 0.01) {
+            target = this.player.velocity.clone();
+            target.applyQuaternion(this.player.camera.quaternion.clone().invert());
+            target.set(target.x * Math.abs(target.x), target.y * Math.abs(target.y), target.z * Math.abs(target.z));
+            target.normalize().multiplyScalar(-0.02);
+        } else {
+            target = new THREE.Vector3();
+        }
+        this.swaypos.lerp(target, delta * 10);
+        const pos = this.offpos.clone().add(this.swaypos);
+        this.model.position.copy(pos);
+    }
+
+    update(delta) {
+        if (this.player === null) {
+            return;
+        }
+
+        this.sway(delta);
+
+        // console.log(this.model.position);
+    }
+
     // Attach to camera for FPS view
-    equip(camera) {
-        camera.add(this.model);
+    equip(player) {
+        this.player = player;
         this.scene.add(this.model);
-        this.model.position.set(1, -1, -0.25);
-        this.model.rotation.set(0, Math.PI / 12, 0);
-        this.isEquipped = true;
+        this.player.camera.add(this.model);
+
+        this.model.position.copy(this.offpos);
+        this.model.rotation.set(this.offrot.x, this.offrot.y, this.offrot.z);
+
+        console.log(this.model.position);
         this.model.visible = true;
+        this.isEquipped = true;
     }
 
     unequip() {
         this.model.visible = false;
-        this.player.camera.remove(this.model);
+        this.scene.remove(this.model);
         this.isEquipped = false;
+        this.group = null;
+        this.player = null;
     }
 
     // Simple recoil animation
