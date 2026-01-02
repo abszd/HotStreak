@@ -18,7 +18,13 @@ class Player {
         this.sprintMultiplier = 1.5;
         this.momentumLoss = 0.85;
         this.gravity = 1;
+
         this.jumpForce = 0.5;
+        this.jumpDuration = 0;
+        this.jumpTimer = 0.2;
+
+        this.jetForce = 0.25;
+        this.jetFuel = 1.5;
 
         this.slide = {
             inProgress: false,
@@ -161,14 +167,29 @@ class Player {
     }
 
     handleFalling(delta) {
+        if (this.jumpDuration < this.jumpTimer) {
+            this.jumpDuration += delta;
+        }
         if (!this.isGrounded()) {
             this.velocity.y -= delta * this.gravity;
             if (this.camera.y - this.velocity.y <= 2) {
                 this.velocity.y = 2 - this.camera.position.y;
             }
+            if (this.keys.jump && this.jumpDuration >= this.jumpTimer) {
+                this.handleJetpack(delta);
+            }
         } else {
             this.velocity.y = 2 - this.camera.position.y;
         }
+    }
+
+    handleJetpack(delta) {
+        if (this.jetFuel < 0) {
+            return;
+        }
+        this.velocity.y += (this.jetForce + this.gravity) * delta;
+        this.velocity.y = Math.min(this.velocity.y, 0.1);
+        this.jetFuel -= delta;
     }
 
     update(delta) {
@@ -193,8 +214,15 @@ class Player {
             this.moveVector.normalize();
             this.moveVector.multiplyScalar(move);
         }
-        if (this.keys.jump && this.isGrounded()) {
-            this.velocity.y = this.jumpForce * (0.5 + this.velocity.length() / 2);
+
+        if (this.keys.jump) {
+            if (this.isGrounded()) {
+                this.velocity.y = this.jumpForce * (0.5 + this.velocity.length() / 2);
+                this.jumpDuration = 0;
+            }
+        }
+        if (this.isGrounded()) {
+            this.jetFuel += delta;
         }
         this.velocity.clampLength(0, 3);
         this.velocity.sub(new THREE.Vector3(this.velocity.x, 0, this.velocity.z).multiplyScalar(1 - this.momentumLoss));
