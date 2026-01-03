@@ -2,13 +2,14 @@ import * as THREE from "three";
 import Player from "./Player";
 
 class Gun {
-  constructor(scene) {
+  constructor(scene, gunProperties) {
     this.scene = scene;
     this.model = new THREE.Group();
     this.player = null;
     this.offpos = new THREE.Vector3(0.4, -0.25, -0.4);
     this.offrot = new THREE.Vector3(0.01, -0.1, 0);
     this.swaypos = new THREE.Vector3(0, 0, 0);
+    this.properties = gunProperties;
   }
 
   create() {
@@ -290,6 +291,7 @@ class Gun {
     this.model.rotation.set(x, y, z);
   }
 
+  shoot() {}
   // Get the model group
   getModel() {
     return this.model;

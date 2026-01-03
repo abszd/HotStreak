@@ -18,27 +18,31 @@ class Player {
     this.speed = 1;
     this.sprintMultiplier = 1.5;
     this.momentumLoss = 0.85;
-    this.gravity = 0.6;
+    this.gravity = 0.3;
+    this.isFalling = false;
 
-    this.jumpForce = 0.3;
-    this.jumpDuration = 0;
-    this.jumpTimer = 0.2;
-
-    this.jetForce = 0.15;
-    this.jetFuel = 1;
-
+    this.jet = {
+      on: false,
+      force: 0.1,
+      fuel: 1,
+      tank: 1,
+    };
     this.slide = {
       inProgress: false,
       duration: 0.5,
       progress: 0,
       direction: new THREE.Vector3(),
       speed: 0.2,
+      reset: 0.5,
+      resetProgress: 0,
     };
+
     this.jump = {
-      progress: 0,
-      duration: 100,
-      power: 10,
+      progress: 0.6,
+      duration: 0.5,
+      power: 0.2,
     };
+
     this.velocity = new THREE.Vector3();
     this.moveVector = new THREE.Vector3();
 
@@ -179,33 +183,40 @@ class Player {
   }
 
   handleFalling(delta) {
-    if (this.jumpDuration < this.jumpTimer) {
-      this.jumpDuration += delta;
+    if (this.jump.progress <= this.jump.duration) {
+      this.jump.progress += delta;
     }
     if (!this.isGrounded()) {
+      this.isFalling = true;
       this.velocity.y -= delta * this.gravity;
       if (this.camera.y - this.velocity.y <= 2) {
         this.velocity.y = 2 - this.camera.position.y;
       }
-      if (this.keys.jump && this.jumpDuration >= this.jumpTimer) {
+      if (this.keys.jump && this.jump.progress > this.jump.duration) {
         this.handleJetpack(delta);
       }
     } else {
+      this.isFalling = false;
       this.velocity.y = 2 - this.camera.position.y;
     }
   }
 
   handleJetpack(delta) {
-    if (this.jetFuel < 0) {
+    this.jet.tank -= delta;
+    if (this.jet.tank <= 0) {
+      this.jet.on = false;
       return;
     }
-    this.velocity.y += (this.jetForce + this.gravity) * delta;
+    this.jet.on = true;
+    console.log(this.jet);
+
+    this.velocity.y += (this.jet.force + this.gravity) * delta;
     this.velocity.y = Math.min(this.velocity.y, 0.1);
-    this.jetFuel -= delta;
   }
 
   handleCollision(delta) {}
 
+  swayCamera() {}
   update(delta) {
     let move = delta * this.speed;
     if (this.keys.sprint) {
@@ -229,24 +240,44 @@ class Player {
       this.moveVector.multiplyScalar(move);
     }
 
-    if (this.keys.jump) {
+    console.log(
+      this.keys.jump,
+      !this.slide.inProgress,
+      this.jump.progress > this.jump.duration,
+      this.jump
+    );
+    if (
+      this.keys.jump &&
+      !this.slide.inProgress &&
+      this.jump.progress > this.jump.duration
+    ) {
+      console.log(this.velocity);
       if (this.isGrounded()) {
-        this.velocity.y = this.jumpForce * (0.5 + this.velocity.length() / 2);
-        this.jumpDuration = 0;
+        const horizontalVelocity = new THREE.Vector3(
+          this.velocity.x,
+          0,
+          this.velocity.z
+        );
+        this.velocity.y =
+          this.jump.power *
+          (0.5 + Math.min(horizontalVelocity.length() / 2, 0.5));
+        this.jump.progress = 0;
       }
     }
     if (this.isGrounded()) {
-      this.jetFuel += delta;
+      this.jet.tank +=
+        this.jet.tank < this.jet.fuel ? delta : this.jet.fuel - this.jet.tank;
     }
     this.velocity.clampLength(0, 3);
     this.velocity.sub(
       new THREE.Vector3(this.velocity.x, 0, this.velocity.z).multiplyScalar(
-        1 - this.momentumLoss
+        1 - (this.isFalling ? this.momentumLoss + 0.075 : this.momentumLoss)
       )
     );
     this.velocity.add(this.moveVector);
     this.camera.position.add(this.velocity);
     this.gun.update(delta);
+    this.swayCamera();
   }
 }
 
