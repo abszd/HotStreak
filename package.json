@@ -1,18 +1,19 @@
 {
-  "name": "fpsgame",
-  "version": "1.0.0",
-  "description": "",
-  "main": "script.js",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "three": "^0.182.0",
-    "vite": "^7.3.0"
-  }
+    "name": "fpsgame",
+    "version": "1.0.0",
+    "description": "",
+    "main": "script.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "deploy": ""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "three": "^0.182.0",
+        "vite": "^7.3.0"
+    }
 }
