@@ -163,7 +163,7 @@ class Player {
     let amt = 0;
     const phase = height * (-4 * (t - 0.5) * (t - 0.5) + 1);
     console.log(this.height + phase);
-    amt += phase < height / 2 ? height - phase : phase;
+    amt += height - phase;
     this.camera.position.y = this.height + phase;
     amt *= this.slide.speed;
     amt += 1;
@@ -238,7 +238,7 @@ class Player {
     const rollDif = (-sideways * maxTilt - this.curRoll) * delta * 8;
     const pitchDif = (frontback * maxTilt * 2 - this.curPitch) * delta * 8;
     const vertDif =
-      (vertical * maxTilt * (this.slide.inProgress ? -10 : 2) - this.curVert) *
+      (vertical * maxTilt * (this.slide.inProgress ? -5 : 2) - this.curVert) *
       delta *
       8;
 

@@ -12,6 +12,7 @@ class Gun {
     this.properties = gunProperties;
     this.curRoll = 0;
     this.curPitch = 0;
+    this.curVert = 0;
   }
 
   create() {
@@ -209,18 +210,30 @@ class Gun {
     target.applyQuaternion(this.player.camera.quaternion.clone().invert());
     const sideways = target.x;
     const frontback = target.z;
+    const vertical = target.y;
 
     const rollDif = (-sideways * maxTilt * 2 - this.curRoll) * delta * 8;
     const pitchDif = (frontback * maxTilt - this.curPitch) * delta * 8;
+    const vertDif =
+      (-vertical * maxTilt * (this.player.slide.inProgress ? -2 : 2) -
+        this.curVert) *
+      delta *
+      8;
 
     const rollQuat = new THREE.Quaternion();
     rollQuat.setFromAxisAngle(new THREE.Vector3(0, 0, 1), rollDif);
     const pitchQuat = new THREE.Quaternion();
     pitchQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchDif);
+    const vertQuat = new THREE.Quaternion();
+    vertQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), vertDif);
 
-    this.model.quaternion.multiply(rollQuat).multiply(pitchQuat);
+    this.model.quaternion
+      .multiply(rollQuat)
+      .multiply(pitchQuat)
+      .multiply(vertQuat);
     this.curRoll += rollDif;
     this.curPitch += pitchDif;
+    this.curVert += vertDif;
   }
 
   update(delta) {
